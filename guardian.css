@@ -1,0 +1,263 @@
+/* ==========================================================================
+   GPS PERSON DISASTER GUARDIAN STYLING (CITIZEN PORTAL)
+   ========================================================================== */
+
+.guardian-view-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  min-height: calc(100vh - 120px);
+}
+
+/* Mobile Simulation Phone Frame (Optionally center-aligned or side-by-side) */
+.guardian-phone-frame {
+  background: #000000;
+  border: 8px solid #1e293b;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.2);
+  display: flex;
+  flex-direction: column;
+  height: 680px;
+  position: relative;
+}
+
+.phone-speaker-notch {
+  width: 120px;
+  height: 20px;
+  background: #1e293b;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.guardian-app-screen {
+  flex: 1;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 30px 16px 20px 16px;
+  position: relative;
+}
+
+/* Citizen Danger Zone Status Banner */
+.citizen-status-banner {
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.citizen-status-banner.danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(153, 27, 27, 0.4));
+  border: 2px solid var(--risk-crit);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.citizen-status-banner.safe {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 78, 59, 0.3));
+  border: 2px solid var(--risk-low);
+}
+
+.citizen-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gps-live-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+}
+
+.status-headline {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: #ffffff;
+}
+
+.status-sub-guidance {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+/* Turn-by-Turn Safe Navigation Box */
+.turn-by-turn-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.route-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.route-destination {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.route-meta {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent-emerald);
+}
+
+.route-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.route-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-blue);
+}
+
+.route-step.alert-reroute {
+  border-left-color: var(--risk-crit);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* 1-Tap SOS Emergency Panic Button */
+.sos-button-section {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.btn-sos-panic {
+  width: 100%;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+  transition: transform 0.1s ease, filter 0.2s ease;
+  animation: pulse-crit 2s infinite;
+}
+
+.btn-sos-panic:hover {
+  filter: brightness(1.15);
+  transform: scale(1.02);
+}
+
+/* Guardian Desktop Map & Telemetry Panel */
+.guardian-desktop-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.guardian-map-box {
+  flex: 1;
+  min-height: 380px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+#guardian-gis-map {
+  width: 100%;
+  height: 100%;
+}
+
+.guardian-tabs-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.guardian-preset-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.guardian-preset-btn:hover, .guardian-preset-btn.active {
+  border-color: var(--accent-blue);
+  background: var(--bg-card-hover);
+}
+
+/* Checklist Items */
+.checklist-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.checklist-item input[type="checkbox"] {
+  accent-color: var(--accent-emerald);
+}
+
+@media (max-width: 900px) {
+  .guardian-view-layout {
+    grid-template-columns: 1fr;
+  }
+  .guardian-phone-frame {
+    height: 600px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}

@@ -1,0 +1,242 @@
+/* ==========================================================================
+   CASCADING IMPACT MODEL & NETWORK GRAPH STYLING
+   ========================================================================== */
+
+.cascade-view-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 18px;
+  height: calc(100vh - 120px);
+}
+
+.cascade-graph-container {
+  background: radial-gradient(circle at center, #0f1c38 0%, #070b14 85%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-toolbar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(13, 21, 39, 0.9);
+  backdrop-filter: blur(12px);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.cascade-svg-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.cascade-svg-canvas:active {
+  cursor: grabbing;
+}
+
+/* Node Link Lines */
+.cascade-link {
+  stroke: rgba(148, 163, 184, 0.25);
+  stroke-width: 2px;
+  stroke-dasharray: 4 2;
+  animation: flowLine 20s linear infinite;
+  transition: stroke 0.3s, stroke-width 0.3s;
+}
+
+.cascade-link.active-crit {
+  stroke: var(--risk-crit);
+  stroke-width: 3px;
+  stroke-dasharray: 6 3;
+  animation: flowLineCrit 3s linear infinite;
+}
+
+.cascade-link.active-high {
+  stroke: var(--risk-high);
+  stroke-width: 2.5px;
+}
+
+@keyframes flowLine {
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes flowLineCrit {
+  to { stroke-dashoffset: -120; }
+}
+
+/* Graph Node Styles */
+.graph-node {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.graph-node:hover {
+  transform: scale(1.08);
+}
+
+.node-rect {
+  fill: var(--bg-secondary);
+  stroke: var(--border-medium);
+  stroke-width: 2;
+  rx: 8;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+  transition: stroke 0.3s, fill 0.3s;
+}
+
+.graph-node.selected .node-rect {
+  stroke: var(--accent-cyan) !important;
+  stroke-width: 3 !important;
+}
+
+.graph-node.crit .node-rect {
+  stroke: var(--risk-crit);
+  fill: rgba(30, 15, 25, 0.95);
+}
+
+.graph-node.high .node-rect {
+  stroke: var(--risk-high);
+  fill: rgba(35, 22, 15, 0.95);
+}
+
+.graph-node.mod .node-rect {
+  stroke: var(--risk-mod);
+  fill: rgba(35, 30, 15, 0.95);
+}
+
+.graph-node.low .node-rect {
+  stroke: var(--risk-low);
+  fill: rgba(15, 30, 25, 0.95);
+}
+
+.node-title-text {
+  fill: #ffffff;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.node-sub-text {
+  fill: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.node-prob-badge {
+  rx: 4;
+}
+
+/* Cascade Details Inspector Side Panel */
+.cascade-inspector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.detail-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.detail-kpi-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-kpi-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+/* Explainable AI Box */
+.xai-reasoning-box {
+  background: linear-gradient(135deg, rgba(13, 21, 39, 0.9), rgba(20, 30, 55, 0.9));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.xai-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.xai-factor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.xai-factor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.xai-weight-bar {
+  width: 50px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.xai-weight-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+}
+
+/* What-If Branch Simulator Box */
+.what-if-box {
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--accent-blue);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.what-if-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+@media (max-width: 1024px) {
+  .cascade-view-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .cascade-graph-container {
+    height: 500px;
+  }
+}

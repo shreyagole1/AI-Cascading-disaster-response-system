@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Cascading Disaster Response System | Nashik Emergency Operations</title>
+  <meta name="description" content="Predict the cascade. Prioritize the response. Protect every person. Autonomous emergency command and decision support platform for Nashik Godavari Flood Cascade.">
+
+  <!-- Google Fonts: Inter, Space Grotesk, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet GIS CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/command-center.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/cascade.css">
+  <link rel="stylesheet" href="css/guardian.css">
+</head>
+<body>
+
+  <div id="app-root">
+    
+    <!-- TOP COMMAND CENTER HEADER -->
+    <header class="command-header">
+      <div class="brand-section">
+        <div class="brand-logo-badge">
+          <i data-lucide="shield-alert"></i>
+        </div>
+        <div class="brand-titles">
+          <h1>
+            AI Cascading Disaster Response System
+            <span class="badge badge-crit" style="font-size: 10px;">NASHIK EOC • LEVEL 4</span>
+          </h1>
+          <div class="tagline">PREDICT THE CASCADE. PRIORITIZE THE RESPONSE. PROTECT EVERY PERSON.</div>
+        </div>
+      </div>
+
+      <!-- Live Incident HUD -->
+      <div class="incident-hud">
+        <div class="hud-item">
+          <span class="pulse-dot crit"></span>
+          <span>INCIDENT: <b id="hud-incident-status" style="color: #fff;">NASHIK GODAVARI - CRITICAL</b></span>
+        </div>
+        <div class="hud-item">
+          <span>THREAT:</span>
+          <span id="hud-threat-level" class="badge badge-crit">CRITICAL</span>
+        </div>
+        <div class="hud-item">
+          <span id="hud-time-elapsed" style="font-family: var(--font-mono); color: var(--accent-cyan);">T+ 42 MIN</span>
+        </div>
+      </div>
+
+      <!-- Header Quick Action Controls -->
+      <div class="header-actions">
+        <button class="btn-header" onclick="window.audioService.playSirenTone()" title="Test Siren">
+          <i data-lucide="volume-2"></i>
+          <span>Audio Alert</span>
+        </button>
+        <button class="btn-header danger" onclick="window.appController.navigateTo('guardian')">
+          <i data-lucide="crosshair"></i>
+          <span>Citizen Guardian</span>
+        </button>
+        <button class="btn-header" onclick="document.body.classList.toggle('light-theme')">
+          <i data-lucide="sun-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- PRIMARY HORIZONTAL NAVIGATION BAR -->
+    <nav class="nav-bar">
+      <a class="nav-link active" data-view="dashboard">
+        <i data-lucide="layout-dashboard"></i> Command Dashboard
+      </a>
+      <a class="nav-link" data-view="map">
+        <i data-lucide="map"></i> Nashik GIS Map
+      </a>
+      <a class="nav-link" data-view="cascade">
+        <i data-lucide="git-merge"></i> Cascading Impact Model <span class="nav-badge crit">N4</span>
+      </a>
+      <a class="nav-link" data-view="agents">
+        <i data-lucide="bot"></i> Multi-Agent System <span class="nav-badge blue">6 Active</span>
+      </a>
+      <a class="nav-link" data-view="interventions">
+        <i data-lucide="zap"></i> Intervention Impact Score <span class="nav-badge mod">84/100</span>
+      </a>
+      <a class="nav-link" data-view="guardian">
+        <i data-lucide="shield-check"></i> Person Disaster Guardian
+      </a>
+      <a class="nav-link" data-view="simulation">
+        <i data-lucide="sliders"></i> Disaster Simulation
+      </a>
+      <a class="nav-link" data-view="resources">
+        <i data-lucide="truck"></i> Resource Allocation
+      </a>
+      <a class="nav-link" data-view="alerts">
+        <i data-lucide="bell"></i> Alert Center <span class="nav-badge crit" id="nav-alert-count">4</span>
+      </a>
+      <a class="nav-link" data-view="knowledge">
+        <i data-lucide="book-open"></i> RAG SOP Knowledge
+      </a>
+    </nav>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="main-content">
+
+      <!-- ===================================================================
+           VIEW 1: /dashboard (Main Emergency Command Center)
+           =================================================================== -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="dashboard-grid">
+
+          <!-- 1. KPI Metrics Row -->
+          <div class="kpi-row">
+            <div class="kpi-card crit">
+              <div class="kpi-header">
+                <span class="kpi-label">Overall Disaster Risk</span>
+                <i data-lucide="alert-octagon" class="kpi-icon" style="color: var(--risk-crit);"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-overall-risk" class="kpi-value" style="color: var(--risk-crit);">89%</span>
+                <span class="badge badge-crit">CRITICAL</span>
+              </div>
+              <div class="kpi-status-bar"><div id="kpi-risk-fill" class="kpi-status-fill" style="width: 89%; background: var(--risk-crit);"></div></div>
+              <div class="kpi-subtext">Trimbak Rainfall: 110mm/h | Gangapur 38.5k cusecs</div>
+            </div>
+
+            <div class="kpi-card high">
+              <div class="kpi-header">
+                <span class="kpi-label">Affected Population</span>
+                <i data-lucide="users" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-affected-pop" class="kpi-value">168,000</span>
+              </div>
+              <div class="kpi-status-bar"><div class="kpi-status-fill" style="width: 72%; background: var(--risk-high);"></div></div>
+              <div class="kpi-subtext">Ramkund, Panchavati & Saraf Bazar</div>
+            </div>
+
+            <div class="kpi-card high">
+              <div class="kpi-header">
+                <span class="kpi-label">Critical Zones</span>
+                <i data-lucide="layers" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-crit-zones" class="kpi-value">3 / 4</span>
+                <span class="badge badge-high">ZONE A & B</span>
+              </div>
+              <div class="kpi-status-bar"><div class="kpi-status-fill" style="width: 75%; background: var(--risk-high);"></div></div>
+              <div class="kpi-subtext">Godavari Surge: +4.2m at Dutondya Maruti</div>
+            </div>
+
+            <div class="kpi-card mod">
+              <div class="kpi-header">
+                <span class="kpi-label">Critical Infrastructure</span>
+                <i data-lucide="building" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-crit-infra" class="kpi-value">7 Assets</span>
+              </div>
+              <div class="kpi-status-bar"><div class="kpi-status-fill" style="width: 60%; background: var(--risk-mod);"></div></div>
+              <div class="kpi-subtext">Holkar Bridge Closed & Satpur MSEDCL At Risk</div>
+            </div>
+
+            <div class="kpi-card crit">
+              <div class="kpi-header">
+                <span class="kpi-label">Hospitals at Risk</span>
+                <i data-lucide="cross" class="kpi-icon" style="color: #ec4899;"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-crit-hosp" class="kpi-value">3 / 4</span>
+                <span class="badge badge-crit">CIVIL SURGE</span>
+              </div>
+              <div class="kpi-status-bar"><div class="kpi-status-fill" style="width: 90%; background: #ec4899;"></div></div>
+              <div class="kpi-subtext">District Civil Hospital at 94% ER Capacity</div>
+            </div>
+
+            <div class="kpi-card low">
+              <div class="kpi-header">
+                <span class="kpi-label">Active Units (NDRF/108)</span>
+                <i data-lucide="truck" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-group">
+                <span id="kpi-avail-resources" class="kpi-value">22 / 30</span>
+                <span class="badge badge-low">READY</span>
+              </div>
+              <div class="kpi-status-bar"><div class="kpi-status-fill" style="width: 73%; background: var(--risk-low);"></div></div>
+              <div class="kpi-subtext">108 Ambulances, NDRF Boats & NMC Crews</div>
+            </div>
+          </div>
+
+          <!-- 2. "WHAT SHOULD WE DO FIRST?" AI Priority Action Panel -->
+          <div class="priority-action-card">
+            <div class="priority-header">
+              <span class="priority-pulse"></span>
+              <span class="priority-title-main">
+                <i data-lucide="shield-check"></i> WHAT SHOULD WE DO FIRST? — NASHIK EOC PRIORITY RESPONSE
+              </span>
+            </div>
+            <div id="dashboard-priority-actions" class="priority-actions-list">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+
+          <!-- 3. Mini Map & Prediction Timeline Column -->
+          <div class="dash-map-col">
+            <div class="cmd-card" style="padding: 12px;">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="map-pin"></i> Nashik Spatial Hazard Overview (Godavari River)</span>
+                <button class="btn-secondary" style="font-size: 11px; padding: 4px 8px;" onclick="window.appController.navigateTo('map')">
+                  Open Full GIS Map →
+                </button>
+              </div>
+              <div class="preview-map-container">
+                <div id="dash-mini-map"></div>
+              </div>
+            </div>
+
+            <!-- Prediction Timeline (NOW -> +30M -> +1H -> +2H) -->
+            <div class="timeline-horizon-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="clock"></i> Predictive Cascade Horizon (Nashik Hydrology Chain)</span>
+                <span class="badge badge-blue">Gangapur Dam + Godavari Physics Model</span>
+              </div>
+              <div id="dash-horizon-grid" class="horizon-grid">
+                <!-- Dynamically populated by app.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Sidebar: Multi-Agent Ticker & Incident Log -->
+          <div class="dash-sidebar-col">
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="activity"></i> Multi-Agent Live Reasoning Feed</span>
+                <button class="btn-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="window.appController.navigateTo('agents')">
+                  Terminal →
+                </button>
+              </div>
+              <div id="dash-agent-ticker" class="agent-ticker-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="history"></i> Incident Chronology Log (Nashik)</span>
+              </div>
+              <div id="dash-timeline-log">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 2: /map (Full-Screen Interactive GIS Disaster Map)
+           =================================================================== -->
+      <section id="view-map" class="view-section">
+        <div class="map-view-layout">
+          <div class="map-container-main">
+            <div id="disaster-gis-map"></div>
+
+            <!-- Floating Layer Controls -->
+            <div class="map-floating-overlay">
+              <div class="map-tools-box">
+                <div style="font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                  <span><i data-lucide="layers"></i> Nashik Map Layers</span>
+                  <span class="badge badge-blue">7 Layers</span>
+                </div>
+                <div class="layer-toggle-group">
+                  <label class="layer-toggle-item">
+                    <span>🌊 Godavari Inundation Risk</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('flood', this.checked)" />
+                  </label>
+                  <label class="layer-toggle-item">
+                    <span>🚗 Roads & Holkar Bridge Closure</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('roads', this.checked)" />
+                  </label>
+                  <label class="layer-toggle-item">
+                    <span>🏥 Nashik District Civil & Hospitals</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('hospitals', this.checked)" />
+                  </label>
+                  <label class="layer-toggle-item">
+                    <span>🏠 Evacuation Shelters (KTHM / Sports)</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('shelters', this.checked)" />
+                  </label>
+                  <label class="layer-toggle-item">
+                    <span>🏗️ Gangapur Dam & Satpur Substation</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('infra', this.checked)" />
+                  </label>
+                  <label class="layer-toggle-item">
+                    <span>🚑 NDRF Boats & 108 Ambulances</span>
+                    <input type="checkbox" checked onchange="window.mapController.toggleLayer('fleet', this.checked)" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Map Status & Legend -->
+            <div class="map-status-overlay">
+              <div class="legend-scale">
+                <span style="font-size: 10px; color: var(--text-muted);">RISK:</span>
+                <span style="color: #10b981; font-weight: 700; font-size: 10px;">LOW</span>
+                <div class="legend-bar"></div>
+                <span style="color: #ef4444; font-weight: 700; font-size: 10px;">CRITICAL</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-secondary);">
+                <span>Active Hydrology: <b>Gangapur Dam Discharging 38,500 Cusecs</b></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map Info & Quick Inspection Panel -->
+          <div class="map-sidebar-panel">
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="crosshair"></i> Nashik Spatial Risk Telemetry</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+                <p>Click any map marker, flood zone, or bridge to inspect live Godavari water levels, road submersion depths, and hospital capacity status.</p>
+              </div>
+            </div>
+
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="alert-triangle"></i> Identified Chokepoints in Nashik</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                <div style="background: rgba(239,68,68,0.15); border-left: 3px solid var(--risk-crit); padding: 8px; border-radius: 4px;">
+                  <strong style="color: #ef4444;">Holkar Bridge & Godavari Road R12</strong>
+                  <div style="color: var(--text-secondary); font-size: 11px;">80cm standing water | Closed by Nashik Police</div>
+                </div>
+                <div style="background: rgba(245,158,11,0.15); border-left: 3px solid var(--risk-mod); padding: 8px; border-radius: 4px;">
+                  <strong style="color: #f59e0b;">Mumbai Naka Junction R14</strong>
+                  <div style="color: var(--text-secondary); font-size: 11px;">Traffic volume +280% | 108 EMS transit delayed +38 min</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 3: /cascade (Cascading Impact Model & Network Graph)
+           =================================================================== -->
+      <section id="view-cascade" class="view-section">
+        <div class="cascade-view-layout">
+          <div class="cascade-graph-container">
+            <div class="graph-toolbar">
+              <span style="font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="git-merge"></i> Nashik Multi-Tier Cascading Graph
+              </span>
+              <span class="badge badge-crit">Gangapur Dam → Godavari → Civil Hospital</span>
+            </div>
+            
+            <div id="cascade-svg-wrap" style="flex: 1; position: relative;">
+              <!-- Dynamically populated by cascade-graph.js -->
+            </div>
+          </div>
+
+          <!-- Cascade Node Inspector -->
+          <div class="cascade-inspector-panel">
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="info"></i> Cascading Node Inspector</span>
+              </div>
+              <div id="cascade-inspector-body">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 4: /agents (Multi-Agent AI Operations Room)
+           =================================================================== -->
+      <section id="view-agents" class="view-section">
+        <div style="display: grid; grid-template-columns: 360px 1fr; gap: 18px; height: calc(100vh - 120px);">
+          
+          <!-- Left: Agent Status Cards List -->
+          <div style="display: flex; flex-direction: column; overflow-y: auto;">
+            <div class="cmd-card" style="margin-bottom: 12px; padding: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="card-title"><i data-lucide="bot"></i> Autonomous Agents (Nashik)</span>
+                <span class="badge badge-low">6 Systems Online</span>
+              </div>
+            </div>
+            <div id="agents-card-list">
+              <!-- Dynamically populated by agent-coordinator.js -->
+            </div>
+          </div>
+
+          <!-- Right: Live Reasoning Terminal & Inter-Agent Bus -->
+          <div class="cmd-card" style="display: flex; flex-direction: column; height: 100%;">
+            <div id="agent-terminal-body" style="flex: 1; display: flex; flex-direction: column;">
+              <!-- Dynamically populated by agent-coordinator.js -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 5: /interventions (Intervention Impact Score & Decision Matrix)
+           =================================================================== -->
+      <section id="view-interventions" class="view-section">
+        <div style="max-width: 1000px; margin: 0 auto; width: 100%;">
+          <div class="cmd-card" style="margin-bottom: 18px; padding: 16px 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <h2 style="font-size: 18px; font-weight: 800; font-family: var(--font-display); color: #fff;">
+                  Intervention Impact Scoring & Decision Matrix (Nashik)
+                </h2>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                  Multi-attribute optimization evaluating risk reduction, protected population along Godavari basin, response time, and trade-offs.
+                </p>
+              </div>
+              <span class="badge badge-crit">CRITICAL CHOKEPOINT: GODAVARI CORRIDOR R12 & HOLKAR BRIDGE</span>
+            </div>
+          </div>
+
+          <div id="interventions-grid-container">
+            <!-- Dynamically populated by interventions.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 6: /guardian (GPS Person Disaster Guardian)
+           =================================================================== -->
+      <section id="view-guardian" class="view-section">
+        <div class="guardian-view-layout">
+          
+          <!-- Citizen Mobile Phone Frame -->
+          <div class="guardian-phone-frame">
+            <div class="phone-speaker-notch"></div>
+            <div class="guardian-app-screen">
+              
+              <!-- Location Status Banner -->
+              <div id="guardian-status-banner">
+                <!-- Dynamically populated by guardian.js -->
+              </div>
+
+              <!-- Turn-by-Turn Safe Routing -->
+              <div class="turn-by-turn-card">
+                <div class="route-header">
+                  <span class="route-destination"><i data-lucide="navigation"></i> Safe Evacuation Path</span>
+                  <span class="route-meta">20 min walk (1.6 km)</span>
+                </div>
+                <div id="guardian-route-steps" class="route-step-list">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
+              <!-- Survival Checklist -->
+              <div class="cmd-card" style="padding: 10px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase;">
+                  🎒 Emergency Go-Bag Checklist (Nashik)
+                </span>
+                <div id="guardian-checklist-wrap" class="checklist-group">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
+              <!-- 1-Tap SOS Emergency Panic Button -->
+              <div id="guardian-sos-wrap" class="sos-button-section">
+                <!-- Dynamically populated -->
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Citizen Desktop Telemetry & Simulated Location Picker -->
+          <div class="guardian-desktop-panel">
+            <div class="cmd-card">
+              <div class="card-header">
+                <span class="card-title"><i data-lucide="map-pin"></i> Select Simulated Citizen Location in Nashik</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                Test how the Guardian adapts its safety recommendations and evacuation corridors based on citizen geolocation in Nashik:
+              </p>
+              <div class="guardian-tabs-row">
+                <button class="guardian-preset-btn active" onclick="window.personGuardian.setPreset('zone_a')">
+                  <div style="font-weight: 700; color: #ef4444;">📍 Zone A: Ramkund Ghat, Panchavati</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Critical Flood (90cm water, Gangapur 38.5k cusecs)</div>
+                </button>
+                <button class="guardian-preset-btn" onclick="window.personGuardian.setPreset('zone_b')">
+                  <div style="font-weight: 700; color: #f97316;">📍 Zone B: Old Nashik & Someshwar</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">High Risk (Riverbank overtopping, Holkar Bridge closed)</div>
+                </button>
+                <button class="guardian-preset-btn" onclick="window.personGuardian.setPreset('zone_d')">
+                  <div style="font-weight: 700; color: #10b981;">📍 Zone D: Indira Nagar Uplands</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Safe Sector (High elevation in South Nashik)</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="guardian-map-box">
+              <div id="guardian-gis-map"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 7: /simulation (Disaster Simulation Sandbox)
+           =================================================================== -->
+      <section id="view-simulation" class="view-section">
+        <div style="max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 18px;">
+          
+          <div class="cmd-card">
+            <div class="card-header">
+              <span class="card-title"><i data-lucide="sliders"></i> Nashik Godavari Disaster Scenario Workbench</span>
+              <span class="badge badge-blue">Dynamic Hydrological Twin</span>
+            </div>
+
+            <!-- Scenario Presets -->
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+              <button class="btn-secondary" onclick="window.simEngine.loadScenario('flash_flood')">
+                🌊 Preset 1: Trimbakeshwar Cloudburst (120 mm/h)
+              </button>
+              <button class="btn-secondary" onclick="window.simEngine.loadScenario('dam_release')">
+                ⚠️ Preset 2: Gangapur Dam High Release (45,000 cusecs)
+              </button>
+              <button class="btn-secondary" onclick="window.simEngine.loadScenario('normal_recovery')">
+                🔄 Preset 3: Normal Conditions Recovery
+              </button>
+            </div>
+
+            <!-- Simulation Parameters Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: var(--bg-tertiary); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px;">
+              <div>
+                <label style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 6px;">
+                  <span>Trimbak Rainfall Intensity</span>
+                  <span id="sim-rainfall-val" style="color: var(--accent-cyan);">110 mm/h</span>
+                </label>
+                <input id="sim-rainfall-slider" type="range" min="0" max="160" value="110" class="scrubber-slider" style="width: 100%;" />
+              </div>
+
+              <div>
+                <label style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 6px;">
+                  <span>Godavari River Surge</span>
+                  <span style="color: var(--risk-crit);">+4.2 m (Dutondya Maruti)</span>
+                </label>
+                <input type="range" min="0" max="8" step="0.1" value="4.2" class="scrubber-slider" style="width: 100%;" />
+              </div>
+
+              <div>
+                <label style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 6px;">
+                  <span>Satpur MSEDCL Grid Health</span>
+                  <span style="color: var(--risk-mod);">74%</span>
+                </label>
+                <input type="range" min="20" max="100" value="74" class="scrubber-slider" style="width: 100%;" />
+              </div>
+            </div>
+
+            <!-- Playback Controls -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="btn-sim-play" class="btn-primary" onclick="window.appState.toggleSimulation()">
+                  ⏸ Pause
+                </button>
+                <button class="btn-secondary" onclick="window.simEngine.tick()">
+                  ⏭ Step (1 Tick)
+                </button>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12px; color: var(--text-muted);">Speed:</span>
+                <button class="btn-secondary sim-speed-btn active" data-speed="1">1x</button>
+                <button class="btn-secondary sim-speed-btn" data-speed="2">2x</button>
+                <button class="btn-secondary sim-speed-btn" data-speed="5">5x</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 8: /resources (Emergency Resource Allocation)
+           =================================================================== -->
+      <section id="view-resources" class="view-section">
+        <div id="resources-view-container">
+          <!-- Dynamically populated by resources.js -->
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 9: /alerts (Emergency Alert Center)
+           =================================================================== -->
+      <section id="view-alerts" class="view-section">
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: 18px;">
+          
+          <!-- Alerts Feed -->
+          <div>
+            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+              <button class="btn-secondary" onclick="window.alertCenter.setChannel('ALL')">All Channels</button>
+              <button class="btn-secondary" onclick="window.alertCenter.setChannel('CITIZEN')">Citizen Alerts</button>
+              <button class="btn-secondary" onclick="window.alertCenter.setChannel('AMBULANCE')">108 EMS Tactical</button>
+              <button class="btn-secondary" onclick="window.alertCenter.setChannel('HOSPITAL')">Hospital Surge</button>
+              <button class="btn-secondary" onclick="window.alertCenter.setChannel('AUTHORITY')">NMC & Police Orders</button>
+            </div>
+            <div id="alerts-feed-list">
+              <!-- Dynamically populated by alerts.js -->
+            </div>
+          </div>
+
+          <!-- Broadcast Dispatch Form -->
+          <div class="cmd-card" style="height: fit-content;">
+            <div class="card-header">
+              <span class="card-title"><i data-lucide="radio"></i> Issue Nashik Emergency Broadcast</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+              <div>
+                <label style="color: var(--text-secondary); margin-bottom: 4px; display: block;">Target Stakeholder Channel</label>
+                <select id="broadcast-channel" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-medium); color: #fff; padding: 8px; border-radius: 4px;">
+                  <option value="CITIZEN">Citizen Public Safety Broadcast (Nashik)</option>
+                  <option value="AMBULANCE">108 Ambulance & EMS Dispatch</option>
+                  <option value="HOSPITAL">District Civil Hospital Surge Directive</option>
+                  <option value="AUTHORITY">NMC / Police Inter-Agency Order</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="color: var(--text-secondary); margin-bottom: 4px; display: block;">Severity Level</label>
+                <select id="broadcast-severity" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-medium); color: #fff; padding: 8px; border-radius: 4px;">
+                  <option value="CRITICAL">Critical / Red Alert</option>
+                  <option value="HIGH">High / Orange Alert</option>
+                  <option value="MODERATE">Moderate / Yellow Alert</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="color: var(--text-secondary); margin-bottom: 4px; display: block;">Alert Headline</label>
+                <input id="broadcast-title" type="text" placeholder="e.g. Godavari River Inundation Evacuation Notice" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-medium); color: #fff; padding: 8px; border-radius: 4px;" />
+              </div>
+
+              <div>
+                <label style="color: var(--text-secondary); margin-bottom: 4px; display: block;">Triggering Cause</label>
+                <input id="broadcast-reason" type="text" placeholder="e.g. Gangapur Dam discharge 38,500 cusecs" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-medium); color: #fff; padding: 8px; border-radius: 4px;" />
+              </div>
+
+              <div>
+                <label style="color: var(--text-secondary); margin-bottom: 4px; display: block;">Mandated Protective Action</label>
+                <textarea id="broadcast-action" rows="3" placeholder="e.g. Evacuate to KTHM College Ground via Gangapur Road. Avoid Holkar Bridge." style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-medium); color: #fff; padding: 8px; border-radius: 4px;"></textarea>
+              </div>
+
+              <button class="btn-danger" style="margin-top: 6px;" onclick="window.alertCenter.broadcastCustomAlert()">
+                📢 Transmit & Broadcast Alert
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW 10: /knowledge (RAG Disaster Knowledge Base & SOPs)
+           =================================================================== -->
+      <section id="view-knowledge" class="view-section">
+        <div style="max-width: 1000px; margin: 0 auto; width: 100%;">
+          
+          <div class="cmd-card" style="margin-bottom: 18px; padding: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <div>
+                <h2 style="font-size: 18px; font-weight: 800; font-family: var(--font-display); color: #fff;">
+                  RAG Disaster Management Knowledge Base (Nashik & Maharashtra SDMA)
+                </h2>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                  Curated standard operating procedures (Maharashtra SDMA, NMC, NDRF 5th Battalion Pune, Health Dept) cited by the Multi-Agent AI system.
+                </p>
+              </div>
+              <span class="badge badge-low">Vector Index Synced</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="rag-search-input" placeholder="Search Nashik disaster protocols, e.g. 'Godavari flood', 'Civil Hospital surge', 'Gangapur Dam'..." 
+                     style="flex: 1; background: var(--bg-primary); border: 1px solid var(--border-medium); border-radius: 4px; padding: 10px 14px; color: #fff; font-size: 13px;"
+                     oninput="window.knowledgeRAG.search(this.value)" />
+              <button class="btn-primary" onclick="window.knowledgeRAG.search(document.getElementById('rag-search-input').value)">
+                <i data-lucide="search"></i> Search SOPs
+              </button>
+            </div>
+          </div>
+
+          <div id="rag-results-container">
+            <!-- Dynamically populated by knowledge-rag.js -->
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Leaflet GIS JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/audio-service.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/simulation-engine.js"></script>
+  <script src="js/map-controller.js"></script>
+  <script src="js/cascade-graph.js"></script>
+  <script src="js/agents/agent-coordinator.js"></script>
+  <script src="js/interventions.js"></script>
+  <script src="js/guardian.js"></script>
+  <script src="js/resources.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/knowledge-rag.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
